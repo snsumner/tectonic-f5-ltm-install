@@ -74,6 +74,8 @@ Create F5 LTM Virtual Service for Tectonic console:
 1. Resources \ Default Pool \ select tectonic_console_443
 1. Rest of the settings can be set to defaults and click Finished button
 
+Please note: screenshots of all these configurations within F5 web console can be referenced here: https://github.com/snsumner/tectonic-f5-ltm-install/tree/master/screenshots
+
 ## Install Tectonic
 
 Now you should proceed with Tectonic install and provide the Master DNS and Tectonic DNS which will direct traffic through F5 load balancer.
