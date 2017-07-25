@@ -66,7 +66,7 @@ Create Virtual Service for API:
 Create Virtual Service for Console:
 1. Click Create button again
 1. General Properties \ Name set to VS-Tectonic-Console
-1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. api.scottsumner.net / 192.168.1.91)
+1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. tectonic.scottsumner.net / 192.168.1.92)
 1. General Properties \ State set to Enabled
 1. Configuration \ Type set to Performance (Layer 4)
 1. Configuration \ Protocol set to TCP
