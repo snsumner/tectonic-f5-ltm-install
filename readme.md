@@ -33,16 +33,43 @@ In this example the virtual IP for console traffic will be 192.168.1.91, DNS res
 
 Within the F5 web console we need to create two LTM pools for directing traffic to Tectonic console and API server.
 
+Create Pool for API:
 1. Login to F5 BigIP LTM web console as admin user
 1. Under tab Main \ Local Traffic \ Pools click Create button
 1. Set Name to tectonic_api_443
 1. Add tcp to Active for Health Monitors
 1. Under New Members add each IP address of MASTER nodes (e.g. 192.168.1.110 & 192.168.1.111) and set Service Port to 443 / HTTPS
-1. The rest of the settings can be left to default and click finish button
+1. The rest of the settings can be left to defaults and click finish button
+
+Create Pool for Console:
 1. Click Create button again
 1. Set Name to tectonic_console_443
 1. Add tcp to Active for Health Monitors
 1. Under New Members add each IP address of WORKER nodes (e.g. 192.168.1.112 & 192.168.1.113) and set Service Port to 443 / HTTPS
-1. The rest of the settings can be left to default and click finish button
+1. Rest of the settings can be set to defaults and click Finished button
 
 ## Create F5 Virtual Servers 
+
+Now we need to create two Virtual Servers which will utilize the Pools we just created.
+
+Create Virtual Service for API:
+1. Under tab Main \ Local Traffic \ Virtual Servers click Create button
+1. General Properties \ Name set to VS-Tectonic-API
+1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. api.scottsumner.net / 192.168.1.91)
+1. General Properties \ State set to Enabled
+1. Configuration \ Type set to Performance (Layer 4)
+1. Configuration \ Protocol set to TCP
+1. Configuration \ SNAT Pool set to Auto Map
+1. Resources \ Default Pool \ select tectonic_api_443
+1. Rest of the settings can be set to defaults and click Finished button
+
+Create Virtual Service for Console:
+1. Click Create button again
+1. General Properties \ Name set to VS-Tectonic-Console
+1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. api.scottsumner.net / 192.168.1.91)
+1. General Properties \ State set to Enabled
+1. Configuration \ Type set to Performance (Layer 4)
+1. Configuration \ Protocol set to TCP
+1. Configuration \ SNAT Pool set to Auto Map
+1. Resources \ Default Pool \ select tectonic_console_443
+1. Rest of the settings can be set to defaults and click Finished button
