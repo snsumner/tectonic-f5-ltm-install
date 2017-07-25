@@ -4,7 +4,7 @@ Installing Tectonic on bare metal or VMWare requires a master DNS (which resolve
 
 When installing on cloud providers such as AWS, Tectonic automatically creates a load balancer (such as AWS ELB). When installing Tectonic on bare metal or VMWare, you must provide your own load balancer.
 
-This document describes setting up F5 BitIP LTM for use as a load balancer with Tectonic.
+This document describes setting up F5 BigIP LTM for use as a load balancer with Tectonic.
 
 ## Overview
 
