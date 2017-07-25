@@ -1,6 +1,10 @@
 # Using F5 BigIP LTM with Tectonic
 
-When installing Tectonic on Bare metal or VMware you have to bring your own load balancer whereas with cloud provider such as AWS, Tectonic automatically setup a load balancer (e.g. AWS ELB) for you. During the Tectonic installation you need to provide the Master DNS which resolves to any master node and Tectonic DNS which resolves to any worker nodes for Ingress. For evaluation purposes some will simply create a DNS entry that points to each node but ideally you want to utilize a load balancer. The purpose of this document is to explain how to setup F5 BigIP LTM to work with Tectonic in this configuration.
+Installing Tectonic on bare metal or VMWare requires a master DNS (which resolves to any master node in the cluster), and a worker DNS (which resolves to any worker nodes for Ingress). Evaluation clusters may be set up using a DNS entry that points to each node, but production clusters require the use of a load balancer.
+
+When installing on cloud providers such as AWS, Tectonic automatically creates a load balancer (such as AWS ELB). When installing Tectonic on bare metal or VMWare, you must provide your own load balancer.
+
+This document describes setting up F5 BitIP LTM for use as a load balancer with Tectonic.
 
 ## Overview
 
@@ -9,73 +13,71 @@ When installing Tectonic on Bare metal or VMware you have to bring your own load
 - F5 BigIP LTM 10.x or higher
   - Should be in same datacenter as Tectonic cluster
 - Tectonic installer
-  - VMware or Bare metal environment
+  - VMware or bare metal environment
 - Pre-allocated IP addresses for cluster and pre-created DNS records
 
 ## DNS and IP address allocation
 
-Installation of Tectonic requires using static allocation of IP Addresses for Bare metal or VMware installation.
+Tectonic installation requires static allocation of IP Addresses for bare metal or VMWare. Create these required DNS records before launching Tectonic Installer.
 
-Prior to the start of setup create required DNS records. Below is a sample table of 2 master nodes (self-hosted etcd) and 2 worker nodes.
+The following example lists the Tectonic node, the Kubernetes API node, two master nodes and 2 worker nodes.
 
 | Record | Type | Value |
 |------|-------------|:-----:|
-|tectonic.scottsumner.net | A | 192.168.1.91 |
-|api.scottsumner.net | A | 192.168.1.92 |
-|master-01.scottsumner.net | A | 192.168.1.110 |
-|master-02.scottsumner.net | A | 192.168.1.111 |
-|worker-01.scottsumner.net | A | 192.168.1.112 |
-|worker-02.scottsumner.net | A | 192.168.1.113 |
+|tectonic.example.net | A | 192.168.1.91 |
+|api.example.net | A | 192.168.1.92 |
+|master-01.example.net | A | 192.168.1.110 |
+|master-02.example.net | A | 192.168.1.111 |
+|worker-01.example.net | A | 192.168.1.112 |
+|worker-02.example.net | A | 192.168.1.113 |
 
-In this example the virtual IP for console traffic will be 192.168.1.91, DNS resolvable at tectonic.scottsumner.net and the virtual IP for API traffic will be 192.168.92, DNS resolvable at api.scottsumner.net
+In this example the virtual IP for console traffic will be 192.168.1.91, DNS resolvable at tectonic.example.net and the virtual IP for API traffic will be 192.168.92, DNS resolvable at api.example.net
 
 ## Create F5 LTM Pools
 
-Within the F5 web console we need to create two LTM pools for directing traffic to Tectonic console and API server.
+First, use the F5 web console to create two LTM pools for directing traffic to Tectonic console and API server.
 
-Create F5 LTM Pool for API Server:
-1. Login to F5 BigIP LTM web console as admin user
-1. Under tab Main \ Local Traffic \ Pools click Create button
-1. Set Name to tectonic_api_443
-1. Add tcp to Active for Health Monitors
-1. Under New Members add each IP address of MASTER nodes (e.g. 192.168.1.110 & 192.168.1.111) and set Service Port to 443 / HTTPS
-1. The rest of the settings can be left to defaults and click finish button
+Create an F5 LTM Pool for the API Server:
+1. Login to F5 BigIP LTM web console as admin user.
+1. From the Main tab, select Local Traffic > Pools, and click Create.
+1. Enter Name: tectonic_api_443
+1. Under Health Monitors, add tcp to Active.
+1. Under New Members add each IP address of MASTER nodes (for example: 192.168.1.110 and 192.168.1.111) and set Service Port to 443 / HTTPS.
+1. Click Finish (leaving the rest of the settings at their default).
 
 Create F5 LTM Pool for Tectonic console:
-1. Click Create button again
-1. Set Name to tectonic_console_443
-1. Add tcp to Active for Health Monitors
-1. Under New Members add each IP address of WORKER nodes (e.g. 192.168.1.112 & 192.168.1.113) and set Service Port to 443 / HTTPS
-1. Rest of the settings can be set to defaults and click Finished button
+1. From Local Traffic > Pools, and click Create.
+1. Enter Name: tectonic_console_443.
+1. Under Health Monitors, add tcp to Active.
+1. Under New Members add each IP address of WORKER nodes (for example: 192.168.1.112 and 192.168.1.113) and set Service Port to 443 / HTTPS.
+1. Click Finish (leaving the rest of the settings at their default).
 
-## Create F5 Virtual Servers 
+## Create F5 Virtual Servers
 
-Now we need to create two Virtual Servers which will utilize the Pools we just created.
+Next, create two Virtual Servers which use the Pools just created.
 
-Create F5 LTM Virtual Service for API Server:
-1. Under tab Main \ Local Traffic \ Virtual Servers click Create button
-1. General Properties \ Name set to VS-Tectonic-API
-1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. api.scottsumner.net / 192.168.1.91)
-1. General Properties \ State set to Enabled
-1. Configuration \ Type set to Performance (Layer 4)
-1. Configuration \ Protocol set to TCP
-1. Configuration \ SNAT Pool set to Auto Map
-1. Resources \ Default Pool \ select tectonic_api_443
-1. Rest of the settings can be set to defaults and click Finished button
+Create an F5 LTM Virtual Service for the API Server:
+1. From the Main tab, select Local Traffic > Virtual Servers, and click Create.
+1. Under General Properties, enter Name: VS-Tectonic-API.
+1. From Destination select Type: Host and enter an address that matches the DNS entry for the API (for example: api.example.net / 192.168.1.91).
+1. Select State: Enabled.
+1. From Configuration, select Type: Performance (Layer 4).
+1. Select Protocol: TCP.
+1. Select SNAT Pool: Auto Map.
+1. Under Resources, select Default Pool: select tectonic_api_443.
+1. Click Finish (leaving the rest of the settings at their default).
 
-Create F5 LTM Virtual Service for Tectonic console:
-1. Click Create button again
-1. General Properties \ Name set to VS-Tectonic-Console
-1. General Properties \ Destination set Type to Host and enter address that match DNS entry for api (e.g. tectonic.scottsumner.net / 192.168.1.92)
-1. General Properties \ State set to Enabled
-1. Configuration \ Type set to Performance (Layer 4)
-1. Configuration \ Protocol set to TCP
-1. Configuration \ SNAT Pool set to Auto Map
-1. Resources \ Default Pool \ select tectonic_console_443
-1. Rest of the settings can be set to defaults and click Finished button
-
-Please note: screenshots of all these configurations within F5 web console can be referenced here: https://github.com/snsumner/tectonic-f5-ltm-install/tree/master/screenshots
+Create an F5 LTM Virtual Service for Tectonic Console:
+1. Click Create.
+1. Under General Properties, enter Name: VS-Tectonic-Console
+1. From Destination select Type: Host and enter an address that matches the DNS entry for Tectonic (for example: tectonic.example.net / 192.168.1.92).
+1. Select State: Enabled.
+1. From Configuration, select Type: Performance (Layer 4).
+1. Select Protocol: TCP.
+1. Select SNAT Pool: Auto Map.
+1. Under Resources, select Default Pool: select tectonic_console_443
+1. Click Finish (leaving the rest of the settings at their default).
 
 ## Install Tectonic
 
-Now you should proceed with Tectonic install and provide the Master DNS and Tectonic DNS which will direct traffic through F5 load balancer.
+Once configured, install Tectonic using the Master DNS and Tectonic DNS defined here to direct traffic through the F5 load balancer.
