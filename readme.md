@@ -59,7 +59,7 @@ Next, create two Virtual Servers which use the Pools just created.
 Create an F5 LTM Virtual Service for the API Server:
 1. From the Main tab, select Local Traffic > Virtual Servers, and click Create.
 1. Under General Properties, enter Name: VS-Tectonic-API.
-1. From Destination select Type: Host and enter an address that matches the DNS entry for the API (for example: api.example.net / 192.168.1.91).
+1. From Destination select Type: Host and enter an address that matches the DNS entry for the API (for example: api.example.net / 192.168.1.92).
 1. Select State: Enabled.
 1. From Configuration, select Type: Performance (Layer 4).
 1. Select Protocol: TCP.
@@ -70,7 +70,7 @@ Create an F5 LTM Virtual Service for the API Server:
 Create an F5 LTM Virtual Service for Tectonic Console:
 1. Click Create.
 1. Under General Properties, enter Name: VS-Tectonic-Console
-1. From Destination select Type: Host and enter an address that matches the DNS entry for Tectonic (for example: tectonic.example.net / 192.168.1.92).
+1. From Destination select Type: Host and enter an address that matches the DNS entry for Tectonic (for example: tectonic.example.net / 192.168.1.91).
 1. Select State: Enabled.
 1. From Configuration, select Type: Performance (Layer 4).
 1. Select Protocol: TCP.
@@ -84,10 +84,10 @@ Instead of using the BIG-IP web console you can create the virtual service and p
 
 ```
 tmsh create ltm pool tectonic_api_443 monitor tcp members add { 192.168.1.110:https { } 192.168.1.111:https { } }
-tmsh create ltm virtual VS-Tectonic-API snat automap pool tectonic_api_443 destination 192.168.1.91:https ip-protocol tcp profiles add { fastL4 }
+tmsh create ltm virtual VS-Tectonic-API snat automap pool tectonic_api_443 destination 192.168.1.92:https ip-protocol tcp profiles add { fastL4 }
 
 tmsh create ltm pool tectonic_console_443 monitor tcp members add { 192.168.1.112:https { } 192.168.1.113:https { } }
-tmsh create ltm virtual VS-Tectonic-Console snat automap pool tectonic_console_443 destination 192.168.1.92:https ip-protocol tcp profiles add { fastL4 }
+tmsh create ltm virtual VS-Tectonic-Console snat automap pool tectonic_console_443 destination 192.168.1.91:https ip-protocol tcp profiles add { fastL4 }
 tmsh save /sys config
 ```
 
