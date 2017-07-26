@@ -78,6 +78,19 @@ Create an F5 LTM Virtual Service for Tectonic Console:
 1. Under Resources, select Default Pool: select tectonic_console_443
 1. Click Finish (leaving the rest of the settings at their default).
 
+## Creating Virtual Service and Pools via CLI
+
+Instead of using the BIG-IP web console you can create the virtual service and pools from CLI.  You would ssh into the F5 LTM as administrator and run the following commands:
+
+```tmsh create ltm pool tectonic_api_443 monitor tcp members add { 192.168.1.110:https { } 192.168.1.111:https { } }
+tmsh create ltm virtual VS-Tectonic-API snat automap pool tectonic_api_443 destination 192.168.1.91:https ip-protocol tcp profiles add { fastL4 }
+
+tmsh create ltm pool tectonic_console_443 monitor tcp members add { 192.168.1.112:https { } 192.168.1.113:https { } }
+tmsh create ltm virtual VS-Tectonic-Console snat automap pool tectonic_console_443 destination 192.168.1.92:https ip-protocol tcp profiles add { fastL4 }
+tmsh save /sys config```
+
+Please note: the IP addresses used in the CLI example correspond to the IP allocation example above.
+
 ## Install Tectonic
 
 Once configured, install Tectonic using the Master DNS and Tectonic DNS defined here to direct traffic through the F5 load balancer.
