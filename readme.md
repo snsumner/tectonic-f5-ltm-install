@@ -41,14 +41,12 @@ Create an F5 LTM Pool for the API Server:
 1. Login to F5 BigIP LTM web console as admin user.
 1. From the Main tab, select Local Traffic > Pools, and click Create.
 1. Enter Name: tectonic_api_443
-1. Under Health Monitors, add tcp to Active.
 1. Under New Members add each IP address of MASTER nodes (for example: 192.168.1.110 and 192.168.1.111) and set Service Port to 443 / HTTPS.
 1. Click Finish (leaving the rest of the settings at their default).
 
 Create F5 LTM Pool for Tectonic console:
 1. From Local Traffic > Pools, and click Create.
 1. Enter Name: tectonic_console_443.
-1. Under Health Monitors, add tcp to Active.
 1. Under New Members add each IP address of WORKER nodes (for example: 192.168.1.112 and 192.168.1.113) and set Service Port to 443 / HTTPS.
 1. Click Finish (leaving the rest of the settings at their default).
 
@@ -83,10 +81,10 @@ Create an F5 LTM Virtual Service for Tectonic Console:
 Instead of using the BIG-IP web console you can create the virtual service and pools from CLI.  You would ssh into the F5 LTM as administrator and run the following commands:
 
 ```
-tmsh create ltm pool tectonic_api_443 monitor tcp members add { 192.168.1.110:https { } 192.168.1.111:https { } }
+tmsh create ltm pool tectonic_api_443 members add { 192.168.1.110:https { } 192.168.1.111:https { } }
 tmsh create ltm virtual VS-Tectonic-API snat automap pool tectonic_api_443 destination 192.168.1.92:https ip-protocol tcp profiles add { fastL4 }
 
-tmsh create ltm pool tectonic_console_443 monitor tcp members add { 192.168.1.112:https { } 192.168.1.113:https { } }
+tmsh create ltm pool tectonic_console_443 members add { 192.168.1.112:https { } 192.168.1.113:https { } }
 tmsh create ltm virtual VS-Tectonic-Console snat automap pool tectonic_console_443 destination 192.168.1.91:https ip-protocol tcp profiles add { fastL4 }
 tmsh save /sys config
 ```
